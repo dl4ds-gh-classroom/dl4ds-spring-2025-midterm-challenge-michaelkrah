@@ -23,17 +23,17 @@ class SimpleCNN(nn.Module):
         super(SimpleCNN, self).__init__()
         # TODO - define the layers of the network you will use
         
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(32 * 7 * 7, 128)
-        self.fc2 = nn.Linear(128, 10)
+        self.fc1 = nn.Linear(32 * 8 * 8, 128)
+        self.fc2 = nn.Linear(128, 100)
     
     def forward(self, x):
         relu = torch.nn.ReLU()
         x = self.pool(relu(self.conv1(x)))  
         x =  self.pool(relu(self.conv2(x))) 
-        x = x.view(-1, 32 * 7 * 7)
+        x = x.view(x.size(0), -1)
         
         x = relu(self.fc1(x))
         x = self.fc2(x)
@@ -129,7 +129,7 @@ def main():
 
     CONFIG = {
         "model": "MyModel",   # Change name when using a different model
-        "batch_size": 8, # run batch size finder to find optimal batch size
+        "batch_size": 512, # run batch size finder to find optimal batch size
         "learning_rate": 0.1,
         "epochs": 5,  # Train for longer in a real scenario
         "num_workers": 4, # Adjust based on your system
@@ -215,7 +215,7 @@ def main():
     ############################################################################
     criterion = torch.nn.CrossEntropyLoss()   ### TODO -- define loss criterion
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0, dampening=0, weight_decay=0)   ### TODO -- define optimizer
-    scheduler = None  # Add a scheduler   ### TODO -- you can optionally add a LR scheduler
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)  # Add a scheduler   ### TODO -- you can optionally add a LR scheduler
 
 
     # Initialize wandb
