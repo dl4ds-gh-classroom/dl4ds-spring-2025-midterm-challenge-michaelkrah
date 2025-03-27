@@ -21,7 +21,7 @@ import json
 class SimpleCNN(nn.Module):
     def __init__(self):
         super(SimpleCNN, self).__init__()
-        # TODO - define the layers of the network you will use
+        # TODO - define the layers of the network you will use test
         
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1)
         self.batch1 = nn.BatchNorm2d(16)
