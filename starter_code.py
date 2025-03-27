@@ -43,8 +43,9 @@ class SimpleCNN(nn.Module):
 
         self.dropout = nn.Dropout(p=0.5)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(128 * 8 * 8, 128)
-        self.fc2 = nn.Linear(128, 100)
+        self.fc1 = nn.Linear(128 * 8 * 8, 256)
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(256, 100)
     
     def forward(self, x):
         relu = torch.nn.ReLU()
@@ -58,7 +59,8 @@ class SimpleCNN(nn.Module):
         x = self.dropout(x)
         x = x.view(x.size(0), -1)
         x = relu(self.fc1(x))
-        x = self.fc2(x)
+        # x = relu(self.fc2(x))
+        x = self.fc3(x)
         return x
 
 
@@ -156,7 +158,7 @@ def main():
         "model": "Model1",   # Change name when using a different model
         "batch_size": 128, # run batch size finder to find optimal batch size
         "learning_rate": 0.001,
-        "epochs": 40,  # Train for longer in a real scenario
+        "epochs": 60,  # Train for longer in a real scenario
         "num_workers": 4, # Adjust based on your system
         "device": "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu",
         "data_dir": "./data",  # Make sure this directory exists
