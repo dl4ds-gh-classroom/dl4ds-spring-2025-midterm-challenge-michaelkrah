@@ -43,7 +43,7 @@ class SimpleCNN(nn.Module):
         x = self.pool(relu(self.batch2(self.conv2(x))))
         x = self.pool(relu(self.batch3(self.conv3(x))))
         x = self.dropout(x)
-        x = x.view(x.size(0), -1)        
+        x = x.view(x.size(0), -1)
         x = relu(self.fc1(x))
         x = self.fc2(x)
         return x
@@ -221,7 +221,7 @@ def main():
     ############################################################################
     criterion = torch.nn.CrossEntropyLoss()   ### TODO -- define loss criterion
     optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG["learning_rate"])   ### TODO -- define optimizer
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)  # Add a scheduler   ### TODO -- you can optionally add a LR scheduler
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)  # Add a scheduler   ### TODO -- you can optionally add a LR scheduler
 
 
     # Initialize wandb
