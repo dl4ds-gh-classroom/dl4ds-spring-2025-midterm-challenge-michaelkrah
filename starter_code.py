@@ -220,7 +220,7 @@ def main():
     # Loss Function, Optimizer and optional learning rate scheduler
     ############################################################################
     criterion = torch.nn.CrossEntropyLoss()   ### TODO -- define loss criterion
-    optimizer = torch.optim.SGD(model.parameters(), lr=CONFIG["learning_rate"], momentum=0, dampening=0, weight_decay=0)   ### TODO -- define optimizer
+    optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG["learning_rate"])   ### TODO -- define optimizer
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)  # Add a scheduler   ### TODO -- you can optionally add a LR scheduler
 
 
