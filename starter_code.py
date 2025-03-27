@@ -25,25 +25,36 @@ class SimpleCNN(nn.Module):
         super(SimpleCNN, self).__init__()
         # TODO - define the layers of the network you will use 
         
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1)
-        self.batch1 = nn.BatchNorm2d(16)
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1)
+        self.batch1 = nn.BatchNorm2d(32)
 
-        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding=1)
         self.batch2 = nn.BatchNorm2d(32)
 
         self.conv3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
         self.batch3 = nn.BatchNorm2d(64)
 
-        self.dropout = nn.Dropout(p=0.3)
+        self.conv4 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
+        self.batch4 = nn.BatchNorm2d(64)
+
+        self.conv5 =  nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
+        self.conv6 =  nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1)
+        self.batch5 = nn.BatchNorm2d(128)
+
+        self.dropout = nn.Dropout(p=0.5)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(64 * 8 * 8, 128)
+        self.fc1 = nn.Linear(128 * 8 * 8, 128)
         self.fc2 = nn.Linear(128, 100)
     
     def forward(self, x):
         relu = torch.nn.ReLU()
         x = relu(self.batch1(self.conv1(x)))
         x = self.pool(relu(self.batch2(self.conv2(x))))
-        x = self.pool(relu(self.batch3(self.conv3(x))))
+        x = relu(self.batch3(self.conv3(x)))
+        x = self.pool(relu(self.batch4(self.conv4(x))))
+
+        x = relu(self.batch5(self.conv5(x)))
+
         x = self.dropout(x)
         x = x.view(x.size(0), -1)
         x = relu(self.fc1(x))
@@ -164,6 +175,7 @@ def main():
 
     transform_train = transforms.Compose([
         transforms.RandomRotation(degrees=(-30, 30)),
+        transforms.RandomCrop((32,32)),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), # Example normalization
@@ -229,7 +241,7 @@ def main():
     ############################################################################
     criterion = torch.nn.CrossEntropyLoss()   ### TODO -- define loss criterion
     optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG["learning_rate"])   ### TODO -- define optimizer
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)  # Add a scheduler   ### TODO -- you can optionally add a LR scheduler
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)  # Add a scheduler   ### TODO -- you can optionally add a LR scheduler
 
 
     # Initialize wandb
