@@ -18,10 +18,12 @@ import json
 # for Part 3 you have the option of using a predefined, pretrained network to
 # finetune.
 ################################################################################
+
+# Part 1 Final Model
 class SimpleCNN(nn.Module):
     def __init__(self):
         super(SimpleCNN, self).__init__()
-        # TODO - define the layers of the network you will use test
+        # TODO - define the layers of the network you will use 
         
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1)
         self.batch1 = nn.BatchNorm2d(16)
@@ -47,6 +49,9 @@ class SimpleCNN(nn.Module):
         x = relu(self.fc1(x))
         x = self.fc2(x)
         return x
+
+
+# Part 2 Final Model
 
 ################################################################################
 # Define a one epoch training function
@@ -158,6 +163,8 @@ def main():
     ############################################################################
 
     transform_train = transforms.Compose([
+        transforms.RandomRotation(degrees=(-30, 30)),
+        transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), # Example normalization
     ])
@@ -169,6 +176,7 @@ def main():
     # Validation and test transforms (NO augmentation)
     transform_test = transforms.Compose([
         transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ]
 
     )   ### TODO -- BEGIN SOLUTION
