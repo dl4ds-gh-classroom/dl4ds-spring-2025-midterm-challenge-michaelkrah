@@ -25,46 +25,69 @@ class SimpleCNN(nn.Module):
         super(SimpleCNN, self).__init__()
         # TODO - define the layers of the network you will use 
         
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1)
-        self.batch1 = nn.BatchNorm2d(32)
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1)
+        self.batch1 = nn.BatchNorm2d(64)
 
-        self.conv2 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding=1)
-        self.batch2 = nn.BatchNorm2d(32)
+        self.conv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
+        self.batch2 = nn.BatchNorm2d(64)
 
-        self.conv3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
-        self.batch3 = nn.BatchNorm2d(64)
+        self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
+        self.batch3 = nn.BatchNorm2d(128)
 
-        self.conv4 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
-        self.batch4 = nn.BatchNorm2d(64)
+        self.conv4 = nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1)
+        self.batch4 = nn.BatchNorm2d(128)
 
-        self.conv5 =  nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
+        self.conv5 =  nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1)
         self.conv6 =  nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1)
         self.batch5 = nn.BatchNorm2d(128)
 
         self.dropout = nn.Dropout(p=0.5)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(128 * 8 * 8, 256)
-        self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(256, 100)
+        self.fc1 = nn.Linear(128 * 8 * 8, 128 * 8 * 4)
+        self.fc2 = nn.Linear(128 * 8 * 4, 128 * 8 * 4)
+        self.fc3 = nn.Linear(128 * 8 * 4, 100)
     
     def forward(self, x):
         relu = torch.nn.ReLU()
         x = relu(self.batch1(self.conv1(x)))
         x = self.pool(relu(self.batch2(self.conv2(x))))
         x = relu(self.batch3(self.conv3(x)))
-        x = self.pool(relu(self.batch4(self.conv4(x))))
+        x = relu(self.batch4(self.conv4(x)))
+        x = self.pool(relu(self.batch5(self.conv5(x))))
 
-        x = relu(self.batch5(self.conv5(x)))
-
-        x = self.dropout(x)
         x = x.view(x.size(0), -1)
         x = relu(self.fc1(x))
-        # x = relu(self.fc2(x))
+        x = self.dropout(x)
+
+        x = relu(self.fc2(x))
         x = self.fc3(x)
         return x
 
 
 # Part 2 Final Model
+
+model2 = torchvision.models.resnet50(weights="ResNet50_Weights.IMAGENET1K_V2")
+print(model2)
+
+
+
+
+# Part 3 Final Model
+
+model3 = torchvision.models.resnet50(weights="ResNet50_Weights.IMAGENET1K_V2")
+
+num_features = model3.fc.in_features
+model3.fc = nn.Linear(num_features, 100)
+
+for param in model3.parameters():
+    param.requires_grad = False
+
+children = list(model3.children())
+
+for child in children[-10:]:
+    for param in child.parameters():
+        param.requires_grad = True
+
 
 ################################################################################
 # Define a one epoch training function
@@ -155,11 +178,11 @@ def main():
 
 
     CONFIG = {
-        "model": "Model1",   # Change name when using a different model
+        "model": "Model3",   # Change name when using a different model
         "batch_size": 128, # run batch size finder to find optimal batch size
         "learning_rate": 0.001,
-        "epochs": 60,  # Train for longer in a real scenario
-        "num_workers": 4, # Adjust based on your system
+        "epochs": 40,  # Train for longer in a real scenario
+        "num_workers": 2, # Adjust based on your system
         "device": "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu",
         "data_dir": "./data",  # Make sure this directory exists
         "ood_dir": "./data/ood-test",
@@ -176,9 +199,11 @@ def main():
     ############################################################################
 
     transform_train = transforms.Compose([
-        transforms.RandomRotation(degrees=(-30, 30)),
-        transforms.RandomCrop((32,32)),
+        transforms.RandomRotation(15),
+        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
         transforms.RandomHorizontalFlip(),
+
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), # Example normalization
     ])
@@ -220,7 +245,8 @@ def main():
     ############################################################################
     #   Instantiate model and move to target device
     ############################################################################
-    model = SimpleCNN()   # instantiate your model ### TODO
+    # model = SimpleCNN()   # instantiate your model ### TODO
+    model = model3
     model = model.to(CONFIG["device"])   # move it to target device
 
     print("\nModel summary:")
@@ -242,8 +268,8 @@ def main():
     # Loss Function, Optimizer and optional learning rate scheduler
     ############################################################################
     criterion = torch.nn.CrossEntropyLoss()   ### TODO -- define loss criterion
-    optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG["learning_rate"])   ### TODO -- define optimizer
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)  # Add a scheduler   ### TODO -- you can optionally add a LR scheduler
+    optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG["learning_rate"]) ### TODO -- define optimizer
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)  # Add a scheduler   ### TODO -- you can optionally add a LR scheduler
 
 
     # Initialize wandb
