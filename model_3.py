@@ -36,7 +36,7 @@ for child in list(model3.children())[-10:]:
 
 model3 = torchvision.models.resnet50(weights="ResNet50_Weights.IMAGENET1K_V2")
 
-model3.fc = nn.Linear(model2.fc.in_features, 100)
+model3.fc = nn.Linear(model3.fc.in_features, 100)
 
 
 
