@@ -19,65 +19,6 @@ import json
 # finetune.
 ################################################################################
 
-# Part 1 Final Model
-class SimpleCNN(nn.Module):
-    def __init__(self):
-        super(SimpleCNN, self).__init__()
-        # TODO - define the layers of the network you will use 
-        
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1)
-        self.batch1 = nn.BatchNorm2d(64)
-
-        self.conv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
-        self.batch2 = nn.BatchNorm2d(64)
-
-        self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
-        self.batch3 = nn.BatchNorm2d(128)
-
-        self.conv4 = nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1)
-        self.batch4 = nn.BatchNorm2d(128)
-
-        self.conv5 =  nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1)
-        self.conv6 =  nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1)
-        self.batch5 = nn.BatchNorm2d(128)
-
-        self.dropout = nn.Dropout(p=0.5)
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(128 * 8 * 8, 128 * 8 * 4)
-        self.fc2 = nn.Linear(128 * 8 * 4, 128 * 8 * 4)
-        self.fc3 = nn.Linear(128 * 8 * 4, 100)
-
-    def forward(self, x):
-        relu = torch.nn.ReLU()
-        x = relu(self.batch1(self.conv1(x)))
-        x = self.pool(relu(self.batch2(self.conv2(x))))
-        x = relu(self.batch3(self.conv3(x)))
-        x = relu(self.batch4(self.conv4(x)))
-        x = self.pool(relu(self.batch5(self.conv5(x))))
-
-        x = x.view(x.size(0), -1)
-        x = relu(self.fc1(x))
-        x = self.dropout(x)
-
-        x = relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
-
-
-# Part 2 Final Model
-
-model2 = torchvision.models.resnet50(weights="ResNet50_Weights.IMAGENET1K_V2")
-num_features = model2.fc.in_features
-model2.fc = nn.Linear(num_features, 100)
-
-for param in model2.parameters():
-    param.requires_grad = False
-
-for param in model2.fc.parameters():
-    param.requires_grad = True
-
-
-
 # Part 3 Final Model
 
 model3 = torchvision.models.resnet50(weights="ResNet50_Weights.IMAGENET1K_V2")
@@ -88,11 +29,15 @@ model3.fc = nn.Linear(num_features, 100)
 for param in model3.parameters():
     param.requires_grad = False
 
-children = list(model3.children())
 
-for child in children[-10:]:
+for child in list(model3.children())[-10:]:
     for param in child.parameters():
         param.requires_grad = True
+
+model3 = torchvision.models.resnet50(weights="ResNet50_Weights.IMAGENET1K_V2")
+
+model3.fc = nn.Linear(model3.fc.in_features, 100)
+
 
 
 ################################################################################
