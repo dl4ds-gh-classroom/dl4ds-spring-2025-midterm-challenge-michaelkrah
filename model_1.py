@@ -35,7 +35,7 @@ class SimpleCNN(nn.Module):
 
         self.conv5 =  nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
         self.batch5 = nn.BatchNorm2d(128)
-        
+
         self.dropout = nn.Dropout(p=0.5)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.fc1 = nn.Linear(128 * 8 * 8, 256)
@@ -43,12 +43,12 @@ class SimpleCNN(nn.Module):
 
     def forward(self, x):
         relu = torch.nn.ReLU()
-        x = relu(self.batch1(self.conv1(x)))
-        x = self.pool(relu(self.batch2(self.conv2(x))))
+        x = relu(self.conv1(x))
+        x = self.pool(relu(self.conv2(x)))
 
-        x = relu(self.batch3(self.conv3(x)))
-        x = self.pool(relu(self.batch4(self.conv4(x))))
-        x = relu(self.batch5(self.conv5(x)))
+        x = relu(self.conv3(x))
+        x = self.pool(relu(self.conv4(x)))
+        x = relu(self.conv5(x))
 
         x = self.dropout(x)
         x = x.view(x.size(0), -1)

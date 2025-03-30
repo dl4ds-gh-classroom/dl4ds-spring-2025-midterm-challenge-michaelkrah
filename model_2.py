@@ -20,13 +20,9 @@ import json
 ################################################################################
 
 
-model2 = torchvision.models.resnet50(weights="ResNet50_Weights.IMAGENET1K_V2")
-
-model2.fc = nn.Linear(model2.fc.in_features, 100)
-for param in model2.parameters():
-    param.requires_grad = False
-for param in model2.fc.parameters():
-    param.requires_grad = True
+model2 = torchvision.models.resnet50()
+num_features = model2.fc.in_features
+model2.fc = nn.Linear(num_features, 100)
 
 
 ################################################################################
@@ -121,7 +117,7 @@ def main():
         "model": "Model2",   # Change name when using a different model
         "batch_size": 128, # run batch size finder to find optimal batch size
         "learning_rate": 0.001,
-        "epochs": 20,  # Train for longer in a real scenario
+        "epochs": 40,  # Train for longer in a real scenario
         "num_workers": 2, # Adjust based on your system
         "device": "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu",
         "data_dir": "./data",  # Make sure this directory exists
